@@ -80,7 +80,7 @@ public class FilmController {
         LocalDate dateRelease = film.getReleaseDate();
         Duration dur = film.getDuration();
 
-        log.info("Неверное заполнено поле \n id: {}\n Название:{} \n Описание: {} \n Дата выхода:{}\n Продолжительность:{}"
-                , filmId, nameFilm, descriptionFilm, dateRelease, dur);
+        log.info("Неверное заполнено поле \n id: {}\n Название:{} \n Описание: {} \n Дата выхода:{}\n Продолжительность:{}",
+                filmId, nameFilm, descriptionFilm, dateRelease, dur);
     }
 }
