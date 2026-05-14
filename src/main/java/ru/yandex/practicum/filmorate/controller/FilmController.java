@@ -25,7 +25,6 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@RequestBody Film newFilm) {
-
         if (newFilm.getName().isBlank()) {
             throw new ValidationException("Название не должно быть пустым");
         }
