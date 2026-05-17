@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
@@ -14,12 +17,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserControllerTests {
 
     private UserController userController;
+    private static Validator validator;
 
     @BeforeEach
     void beforeEach() {
         userController = new UserController();
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
-
 
     @Test
     void testPostUserIsValid() {
@@ -36,11 +41,7 @@ class UserControllerTests {
     void testPostExceptionWhenEmailNotContainSymbol() {
         User user = createValidUser();
         user.setEmail("username.ru"); // Содержит символ @
-
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                userController.addUser(user)
-        );
-        assertEquals("Не верно заполнено поле Email", exception.getMessage());
+        assertFalse(validator.validate(user).isEmpty(), "Не должно пройти валидацию, валидатор не пуст.");
     }
 
     @Test
@@ -48,10 +49,7 @@ class UserControllerTests {
         User user = createValidUser();
         user.setLogin("vladimir lenin"); // Содержит пробел
 
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                userController.addUser(user)
-        );
-        assertEquals("Логин не должен содержать пробелы или не должен быть пустым", exception.getMessage());
+        assertFalse(validator.validate(user).isEmpty(), "Не должно пройти валидацию, валидатор не пуст.");
     }
 
     @Test
@@ -59,10 +57,7 @@ class UserControllerTests {
         User user = createValidUser();
         user.setLogin("   "); // Пустая строка
 
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                userController.addUser(user)
-        );
-        assertEquals("Логин не должен содержать пробелы или не должен быть пустым", exception.getMessage());
+        assertFalse(validator.validate(user).isEmpty(), "Не должно пройти валидацию, валидатор не пуст.");
     }
 
     @Test

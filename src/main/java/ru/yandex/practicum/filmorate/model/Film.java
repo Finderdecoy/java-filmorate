@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -15,8 +16,9 @@ import java.time.LocalDate;
 @Data
 public class Film {
     private Long id;
-    @NonNull
+    @NotBlank
     private String name;
+    @Size(max = 200)
     private String description;
     private LocalDate releaseDate;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT, pattern = "MINUTES")

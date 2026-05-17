@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
@@ -15,10 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmControllerTests {
 
     private FilmController filmController;
+    private Validator validator;
 
     @BeforeEach
     void beforeEach() {
         filmController = new FilmController();
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 
     @Test
@@ -37,25 +43,18 @@ class FilmControllerTests {
         Film film = createValidFilm();
         film.setName("   ");
 
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                filmController.addFilm(film)
-        );
-        assertEquals("Название не должно быть пустым", exception.getMessage());
+        assertFalse(validator.validate(film).isEmpty(), "Валидатор должен выкинуть ошибку");
     }
 
     @Test
     void testAddFilmWithSuccessAndExceptionLengthDescription() {
         Film film = createValidFilm();
-        film.setDescription("a".repeat(201));
 
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                filmController.addFilm(film)
-        );
-        assertEquals("Длинна описания не должна превышать 200 символов", exception.getMessage());
+        film.setDescription("a".repeat(201));
+        assertFalse(validator.validate(film).isEmpty(), "Валидатор не пропустит");
 
         film.setDescription("a".repeat(200));
-
-        assertEquals(film, filmController.addFilm(film), "Фильм должен добавится т.к. описание не превышает 200 символов");
+        assertTrue(validator.validate(film).isEmpty(), "Валидатор будет пустым. Все условия соблюдены");
     }
 
     @Test
@@ -63,9 +62,7 @@ class FilmControllerTests {
         Film film = createValidFilm();
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
 
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                filmController.addFilm(film)
-        );
+        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.addFilm(film));
         assertEquals("Дата фильма не должна быть младше 1895г. 28 числа декабря.", exception.getMessage());
 
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
@@ -78,9 +75,7 @@ class FilmControllerTests {
         Film film = createValidFilm();
         film.setDuration(Duration.ofMinutes(-1));
 
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                filmController.addFilm(film)
-        );
+        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.addFilm(film));
         assertEquals("Длина фильма должна быть положительным числом", exception.getMessage());
 
         film.setDuration(Duration.ofMinutes(1));
@@ -110,9 +105,7 @@ class FilmControllerTests {
         Film film = createValidFilm();
         film.setId(null);
 
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                filmController.editFilm(film)
-        );
+        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.editFilm(film));
         assertEquals("Неверно заполнены поля", exception.getMessage());
     }
 
@@ -121,9 +114,7 @@ class FilmControllerTests {
         Film film = createValidFilm();
         film.setId(999L); // Несуществующий ID
 
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                filmController.editFilm(film)
-        );
+        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.editFilm(film));
         assertEquals("Неверно заполнены поля", exception.getMessage());
     }
 

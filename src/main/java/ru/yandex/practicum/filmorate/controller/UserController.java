@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -22,13 +23,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User addUser(@RequestBody User newUser) {
-        if (!newUser.getEmail().contains("@")) {
-            throw new ValidationException("Не верно заполнено поле Email");
-        }
-        if (newUser.getLogin().contains(" ") || newUser.getLogin().isBlank()) {
-            throw new ValidationException("Логин не должен содержать пробелы или не должен быть пустым");
-        }
+    public User addUser(@Valid @RequestBody User newUser) { //что смог, пустил в валидатор
         if (newUser.getName() == null || newUser.getName().isBlank()) {
             newUser.setName(newUser.getLogin());
         }
@@ -49,11 +44,25 @@ public class UserController {
             throw new ValidationException("Id должен быть указан");
         }
         if (users.containsKey(userId)) {
-            if (editUser.getName() == null && editUser.getName().isBlank() || editUser.getBirthday().isAfter(LocalDate.now()) || editUser.getEmail().isBlank()) {
-                logAllFields(editUser);
-                throw new ValidationException("Новое имя, и дата рождения не могут быть пустыми");
+            boolean isChanged = false;
+            User oldUser = users.get(userId);
+            if (editUser.getName() != null || !editUser.getName().isBlank()) {
+                oldUser.setName(editUser.getName());
+                isChanged = true;
             }
-            users.put(userId, editUser);
+            if (!editUser.getBirthday().isAfter(LocalDate.now())) {
+                oldUser.setBirthday(editUser.getBirthday());
+                isChanged = true;
+            }
+            if (!editUser.getEmail().isBlank()) {
+                oldUser.setEmail(editUser.getEmail());
+                isChanged = true;
+            }
+            if (!isChanged) {
+                logAllFields(editUser);
+                throw new ValidationException("Данные не были изменены");
+            }
+            users.put(userId, oldUser);
             return editUser;
         }
         throw new RuntimeException("Данные не были изменены, проверьте правильность заполнения");

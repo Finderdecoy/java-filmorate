@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -12,11 +12,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private final HashMap<Long, Film> films = new HashMap<>();
-    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
+    private static final LocalDate ORIGINAL_DATE_RELEASE = LocalDate.of(1895, 12, 28);
+    private static final int CORRECT_LENGTH = 200;
 
     @GetMapping
     public Collection<Film> getFilms() {
@@ -24,20 +26,15 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film addFilm(@RequestBody Film newFilm) {
-        if (newFilm.getName().isBlank()) {
-            throw new ValidationException("Название не должно быть пустым");
-        }
-        if (newFilm.getDescription().length() > 200) {
-            throw new ValidationException("Длинна описания не должна превышать 200 символов");
-        }
-        if (newFilm.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+    public Film addFilm(@Valid @RequestBody Film newFilm) { //что смог, пустил в валидатор
+        if (newFilm.getReleaseDate().isBefore(ORIGINAL_DATE_RELEASE)) {
             throw new ValidationException("Дата фильма не должна быть младше 1895г. 28 числа декабря.");
         }
         if (newFilm.getDuration().toMinutes() < 0) {
             throw new ValidationException("Длина фильма должна быть положительным числом");
         }
-        logAllFields(newFilm);
+
+        //logAllFields(newFilm);
         log.info("\n Фильм успешно добавлен -  {}", newFilm);
         long idFilm = nextId();
         newFilm.setId(idFilm);
@@ -48,19 +45,33 @@ public class FilmController {
     @PutMapping
     public Film editFilm(@RequestBody Film editFilm) {
         Long filmId = editFilm.getId();
-
+        boolean isChanged = false;
         if (filmId == null) {
             throw new ValidationException("Неверно заполнены поля");
         }
         if (films.containsKey(filmId)) {
-            if (editFilm.getDuration().toMinutes() < 0
-                    || editFilm.getName().isBlank()
-                    || editFilm.getDescription().isBlank()
-                    || editFilm.getReleaseDate().isAfter(LocalDate.now())) {
-                logAllFields(editFilm);
-                throw new ValidationException("Неверно заполнены поля");
+            Film oldFilm = films.get(filmId);
+            if (editFilm.getDuration().toMinutes() < 0) {
+                oldFilm.setDuration(editFilm.getDuration());
+                isChanged = true;
             }
-            films.put(filmId, editFilm);
+            if (editFilm.getName() == null || editFilm.getName().isBlank()) {
+                oldFilm.setName(editFilm.getName());
+                isChanged = true;
+            }
+            if (!editFilm.getDescription().isBlank()) {
+                oldFilm.setDescription(editFilm.getDescription());
+                isChanged = true;
+            }
+            if (!editFilm.getReleaseDate().isAfter(LocalDate.now()) && !editFilm.getReleaseDate().isBefore(ORIGINAL_DATE_RELEASE)) {
+                oldFilm.setReleaseDate(editFilm.getReleaseDate());
+                isChanged = true;
+            }
+            if (!isChanged) {
+                logAllFields(editFilm);
+                throw new ValidationException("Фильм не был изменен проверьте поля");
+            }
+            films.put(filmId, oldFilm);
             return editFilm;
         }
         throw new ValidationException("Неверно заполнены поля");
