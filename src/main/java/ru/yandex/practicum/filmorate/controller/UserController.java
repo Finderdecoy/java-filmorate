@@ -59,8 +59,8 @@ public class UserController {
                 isChanged = true;
             }
             if (!isChanged) {
+                log.info("Данные не были изменены");
                 logAllFields(editUser);
-                throw new ValidationException("Данные не были изменены");
             }
             users.put(userId, oldUser);
             return editUser;
