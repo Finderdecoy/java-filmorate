@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 public class FilmController {
     private final HashMap<Long, Film> films = new HashMap<>();
     private static final LocalDate ORIGINAL_DATE_RELEASE = LocalDate.of(1895, 12, 28);
+    private static final int CORRECT_LENGTH = 200;
 
     @GetMapping
     public Collection<Film> getFilms() {
@@ -25,9 +27,13 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film newFilm) { //что смог, пустил в валидатор
-        if (newFilm.getReleaseDate() != null && newFilm.getReleaseDate().isBefore(ORIGINAL_DATE_RELEASE)) {
+        if (newFilm.getReleaseDate().isBefore(ORIGINAL_DATE_RELEASE)) {
             throw new ValidationException("Дата фильма не должна быть младше 1895г. 28 числа декабря.");
         }
+        if (newFilm.getDuration().toMinutes() < 0) {
+            throw new ValidationException("Длина фильма должна быть положительным числом");
+        }
+
         //logAllFields(newFilm);
         log.info("\n Фильм успешно добавлен -  {}", newFilm);
         long idFilm = nextId();
@@ -37,19 +43,19 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film editFilm(@RequestBody Film editFilm) {  // не стал делать валидацию иначе он выкинет ошибку и не изменит
-        Long filmId = editFilm.getId();                 // нужные поля, которые валидные по значению
+    public Film editFilm(@RequestBody Film editFilm) {
+        Long filmId = editFilm.getId();
         boolean isChanged = false;
         if (filmId == null) {
-            throw new ValidationException("Такого ID нет");
+            throw new ValidationException("Неверно заполнены поля");
         }
         if (films.containsKey(filmId)) {
             Film oldFilm = films.get(filmId);
-            if (editFilm.getDuration() != null && editFilm.getDuration() < 0) {
+            if (editFilm.getDuration().toMinutes() < 0) {
                 oldFilm.setDuration(editFilm.getDuration());
                 isChanged = true;
             }
-            if (editFilm.getName() != null && !editFilm.getName().isBlank()) {
+            if (editFilm.getName() == null || editFilm.getName().isBlank()) {
                 oldFilm.setName(editFilm.getName());
                 isChanged = true;
             }
@@ -62,8 +68,8 @@ public class FilmController {
                 isChanged = true;
             }
             if (!isChanged) {
-                log.info("Фильм не был отредактирован");
                 logAllFields(editFilm);
+                throw new ValidationException("Фильм не был изменен проверьте поля");
             }
             films.put(filmId, oldFilm);
             return editFilm;
@@ -83,7 +89,7 @@ public class FilmController {
         String nameFilm = film.getName();
         String descriptionFilm = film.getDescription();
         LocalDate dateRelease = film.getReleaseDate();
-        Integer dur = film.getDuration();
+        Duration dur = film.getDuration();
 
         log.info("Неверное заполнено поле \n id: {}\n Название:{} \n Описание: {} \n Дата выхода:{}\n Продолжительность:{}",
                 filmId, nameFilm, descriptionFilm, dateRelease, dur);

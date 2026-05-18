@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collection;
 
@@ -72,13 +73,13 @@ class FilmControllerTests {
     @Test
     void testAddDurationIsNegativeAndPositiveAndEmpty() {
         Film film = createValidFilm();
-        film.setDuration(-1);
+        film.setDuration(Duration.ofMinutes(-1));
 
-        assertFalse(validator.validate(film).isEmpty(), "Валидатор не должен пропустить отрицательно число");
-        System.out.println(validator.validate(film));
+        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.addFilm(film));
+        assertEquals("Длина фильма должна быть положительным числом", exception.getMessage());
 
-        film.setDuration(1);
-        assertTrue(validator.validate(film).isEmpty(), "Валидатор будет пустым. Все условия соблюдены");
+        film.setDuration(Duration.ofMinutes(1));
+        assertEquals(film, filmController.addFilm(film), "Должно добавится т.к. Значение верное");
     }
 
 
@@ -91,7 +92,7 @@ class FilmControllerTests {
         updatedData.setName("Обновленное название");
         updatedData.setDescription("Новое описание");
         updatedData.setReleaseDate(LocalDate.of(2020, 1, 1));
-        updatedData.setDuration(150);
+        updatedData.setDuration(Duration.ofMinutes(150));
 
         Film result = filmController.editFilm(updatedData);
 
@@ -105,7 +106,7 @@ class FilmControllerTests {
         film.setId(null);
 
         ValidationException exception = assertThrows(ValidationException.class, () -> filmController.editFilm(film));
-        assertEquals("Такого ID нет", exception.getMessage());
+        assertEquals("Неверно заполнены поля", exception.getMessage());
     }
 
     @Test
@@ -129,7 +130,7 @@ class FilmControllerTests {
         film.setName("Интерстеллар");
         film.setDescription("Фильм о космических путешествиях Кристофера Нолана");
         film.setReleaseDate(LocalDate.of(2014, 11, 6));
-        film.setDuration(150);
+        film.setDuration(Duration.ofMinutes(169));
         return film;
     }
 }
