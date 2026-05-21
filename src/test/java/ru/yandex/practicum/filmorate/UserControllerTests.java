@@ -123,7 +123,7 @@ class UserControllerTests {
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 userController.editingUser(user)
         );
-        assertEquals("Данные не были изменены, проверьте правильность заполнения", exception.getMessage());
+        assertEquals("Пользователь id = 999 не найден.", exception.getMessage());
     }
 
 

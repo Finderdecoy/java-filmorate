@@ -50,22 +50,21 @@ public class UserController {
                 oldUser.setName(editUser.getName());
                 isChanged = true;
             }
-            if (!editUser.getBirthday().isAfter(LocalDate.now())) {
+            if (editUser.getBirthday() != null && !editUser.getBirthday().isAfter(LocalDate.now())) {
                 oldUser.setBirthday(editUser.getBirthday());
                 isChanged = true;
             }
-            if (!editUser.getEmail().isBlank()) {
+            if (editUser.getEmail() != null && !editUser.getEmail().isBlank()) {
                 oldUser.setEmail(editUser.getEmail());
                 isChanged = true;
             }
             if (!isChanged) {
                 logAllFields(editUser);
-                throw new ValidationException("Данные не были изменены");
             }
             users.put(userId, oldUser);
             return editUser;
         }
-        throw new RuntimeException("Данные не были изменены, проверьте правильность заполнения");
+        throw new RuntimeException("Пользователь id = " + userId + " не найден.");
     }
 
     private long idCreate() {

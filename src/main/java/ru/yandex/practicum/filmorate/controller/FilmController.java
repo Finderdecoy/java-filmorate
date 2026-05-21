@@ -51,7 +51,7 @@ public class FilmController {
         }
         if (films.containsKey(filmId)) {
             Film oldFilm = films.get(filmId);
-            if (editFilm.getDuration().toMinutes() < 0) {
+            if (editFilm.getDuration() != null && editFilm.getDuration().toMinutes() < 0) {
                 oldFilm.setDuration(editFilm.getDuration());
                 isChanged = true;
             }
@@ -59,22 +59,22 @@ public class FilmController {
                 oldFilm.setName(editFilm.getName());
                 isChanged = true;
             }
-            if (!editFilm.getDescription().isBlank()) {
+            if (editFilm.getDescription() != null && !editFilm.getDescription().isBlank()) {
                 oldFilm.setDescription(editFilm.getDescription());
                 isChanged = true;
             }
-            if (!editFilm.getReleaseDate().isAfter(LocalDate.now()) && !editFilm.getReleaseDate().isBefore(ORIGINAL_DATE_RELEASE)) {
+            if (editFilm.getReleaseDate() != null && !editFilm.getReleaseDate().isAfter(LocalDate.now()) &&
+                    !editFilm.getReleaseDate().isBefore(ORIGINAL_DATE_RELEASE)) {
                 oldFilm.setReleaseDate(editFilm.getReleaseDate());
                 isChanged = true;
             }
             if (!isChanged) {
                 logAllFields(editFilm);
-                throw new ValidationException("Фильм не был изменен проверьте поля");
             }
             films.put(filmId, oldFilm);
             return editFilm;
         }
-        throw new ValidationException("Неверно заполнены поля");
+        throw new RuntimeException("Фильм с id = " + filmId + " не найден.");
     }
 
     private long nextId() {

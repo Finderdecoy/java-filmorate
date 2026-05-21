@@ -114,8 +114,8 @@ class FilmControllerTests {
         Film film = createValidFilm();
         film.setId(999L); // Несуществующий ID
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.editFilm(film));
-        assertEquals("Неверно заполнены поля", exception.getMessage());
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> filmController.editFilm(film));
+        assertEquals("Фильм с id = 999 не найден.", exception.getMessage());
     }
 
 
