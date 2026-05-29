@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Film.
@@ -23,4 +25,5 @@ public class Film {
     private LocalDate releaseDate;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT, pattern = "MINUTES")
     private Duration duration;
+    private Set<Long> likeList = new HashSet<>();
 }
