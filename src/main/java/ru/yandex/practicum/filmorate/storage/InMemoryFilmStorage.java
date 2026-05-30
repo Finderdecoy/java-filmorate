@@ -20,6 +20,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     private static final int CORRECT_LENGTH = 200;
 
     @Override
+    public HashMap<Long, Film> getFilmStorage() {
+        return films;
+    }
+
+    @Override
     public Collection<Film> getFilms() {
         return films.values();
     }

@@ -83,4 +83,9 @@ public class InMemoryUserStorage implements UserStorage {
 
         log.info("Id User: {} \n Имайл: {} \n Логин: {} \n Имя: {} \n День рождения: {}", id, email, login, name, birthday);
     }
+
+    @Override
+    public HashMap<Long, User> getAllUsers() {
+        return users;
+    }
 }

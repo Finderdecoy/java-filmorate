@@ -1,39 +1,34 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
 
+@RequiredArgsConstructor
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private UserStorage userStorage;
-    private UserService userService;
-
-    public UserController(UserStorage userStorage, UserService userService) {
-        this.userStorage = userStorage;
-        this.userService = userService;
-    }
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> getUsers() {
-        return userStorage.getUsers();
+        return userService.getUsers();
     }
 
     @PostMapping
     public User addUser(@Valid @RequestBody User newUser) { //что смог, пустил в валидатор
-        return userStorage.addUser(newUser);
+        return userService.addUser(newUser);
     }
 
     @PutMapping
     public User editingUser(@RequestBody User editUser) {
-        return userStorage.editingUser(editUser);
+        return userService.editingUser(editUser);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

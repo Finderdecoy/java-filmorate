@@ -4,12 +4,15 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
+import java.util.HashMap;
 
 @Component
 public interface UserStorage {
-    Collection<User> getUsers();
+    public Collection<User> getUsers();
 
-    User addUser(User user);
+    public User addUser(User user);
 
-    User editingUser(User user);
+    public User editingUser(User user);
+
+    public HashMap<Long, User> getAllUsers();
 }

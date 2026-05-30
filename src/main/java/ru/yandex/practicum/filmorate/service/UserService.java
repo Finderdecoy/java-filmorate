@@ -1,23 +1,21 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
-    private UserStorage userStorage;
+    private final UserStorage userStorage;
 
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     public void addToFriendList(Long firstId, Long secondId) {
         User firstFriend = findUserByID(firstId);
@@ -47,8 +45,26 @@ public class UserService {
     }
 
     public User findUserByID(Long id) {
-        return userStorage.getUsers().stream()
-                .filter(user -> Objects.equals(user.getId(), id))
-                .findFirst().orElseThrow(() -> new NotFoundException("Пользователь с таким id " + id + " не найден"));
+        if (getAllUsers().containsKey(id)) {
+            return getAllUsers().get(id);
+        }
+        throw new NotFoundException("Пользователь с таким id " + id + " не найден");
     }
+
+    public HashMap<Long, User> getAllUsers() {
+        return userStorage.getAllUsers();
+    }
+
+    public Collection<User> getUsers() {
+        return userStorage.getUsers();
+    }
+
+    public User addUser(User user) {
+        return userStorage.addUser(user);
+    }
+
+    public User editingUser(User user) {
+        return userStorage.editingUser(user);
+    }
+
 }
