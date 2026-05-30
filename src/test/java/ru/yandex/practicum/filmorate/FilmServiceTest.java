@@ -9,21 +9,20 @@ import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 
 class FilmServiceTest {
-//    private FilmService filmService;
-//
-//    @BeforeEach
-//    public void beforeEach() {
-//        this.filmService = new FilmService(new InMemoryFilmStorage(), new UserService(new InMemoryUserStorage()));
-//    }
-//
-//    @Test
-//    public void testFilmLikedWhenRightParam() {
-//        //тесты в разработке. Нагоняю когорту
-//    }
-//
-//    @Test
-//    public void testFilmLikedWhitWrongParam() {
-//        //тесты в разработке. Нагоняю когорту
-//    }
+    private FilmService filmService;
 
+    @BeforeEach
+    public void beforeEach() {
+        this.filmService = new FilmService(new InMemoryFilmStorage(), new UserService(new InMemoryUserStorage()));
+    }
+
+    @Test
+    public void testFilmLikedWhenRightParam() {
+        //тесты в разработке. Нагоняю когорту
+    }
+
+    @Test
+    public void testFilmLikedWhitWrongParam() {
+        //тесты в разработке. Нагоняю когорту
+    }
 }
