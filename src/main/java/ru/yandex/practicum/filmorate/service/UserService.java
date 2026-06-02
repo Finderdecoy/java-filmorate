@@ -7,15 +7,14 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
     private final UserStorage userStorage;
-
 
     public void addToFriendList(Long firstId, Long secondId) {
         User firstFriend = findUserByID(firstId);
@@ -45,15 +44,13 @@ public class UserService {
     }
 
     public User findUserByID(Long id) {
-        if (getAllUsers().containsKey(id)) {
-            return getAllUsers().get(id);
+        Optional<User> user = userStorage.getByID(id);
+        if (user.isPresent()) {
+            return user.get();
         }
         throw new NotFoundException("Пользователь с таким id " + id + " не найден");
     }
 
-    public HashMap<Long, User> getAllUsers() {
-        return userStorage.getAllUsers();
-    }
 
     public Collection<User> getUsers() {
         return userStorage.getUsers();

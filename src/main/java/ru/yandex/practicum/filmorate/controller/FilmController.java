@@ -16,11 +16,6 @@ import java.util.Collection;
 public class FilmController {
     private final FilmService filmService;
 
-//    @Autowired
-//    public FilmController(FilmService filmService) {
-//        this.filmService = filmService;
-//    }
-
     @GetMapping
     public Collection<Film> getFilms() {
         return filmService.getFilms();

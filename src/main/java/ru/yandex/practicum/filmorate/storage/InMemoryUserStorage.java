@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -84,8 +85,7 @@ public class InMemoryUserStorage implements UserStorage {
         log.info("Id User: {} \n Имайл: {} \n Логин: {} \n Имя: {} \n День рождения: {}", id, email, login, name, birthday);
     }
 
-    @Override
-    public HashMap<Long, User> getAllUsers() {
-        return users;
+    public Optional<User> getByID(Long id) {
+        return Optional.ofNullable(users.get(id));
     }
 }

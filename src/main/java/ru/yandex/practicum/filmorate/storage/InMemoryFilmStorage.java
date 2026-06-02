@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -18,11 +19,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final HashMap<Long, Film> films = new HashMap<>();
     private static final LocalDate ORIGINAL_DATE_RELEASE = LocalDate.of(1895, 12, 28);
     private static final int CORRECT_LENGTH = 200;
-
-    @Override
-    public HashMap<Long, Film> getFilmStorage() {
-        return films;
-    }
 
     @Override
     public Collection<Film> getFilms() {
@@ -95,5 +91,9 @@ public class InMemoryFilmStorage implements FilmStorage {
 
         log.info("Неверное заполнено поле \n id: {}\n Название:{} \n Описание: {} \n Дата выхода:{}\n Продолжительность:{}",
                 filmId, nameFilm, descriptionFilm, dateRelease, dur);
+    }
+
+    public Optional<Film> getByID(Long id) {
+        return Optional.ofNullable(films.get(id));
     }
 }

@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -38,14 +38,11 @@ public class FilmService {
     }
 
     private Film findFilmById(Long id) {
-        if (getFilmsStorage().containsKey(id)) {
-            return getFilmsStorage().get(id);
+        Optional<Film> film = filmStorage.getByID(id);
+        if (film.isPresent()) {
+            return film.get();
         }
         throw new NotFoundException("Фильм с id: " + id + " не найден.");
-    }
-
-    public HashMap<Long, Film> getFilmsStorage() {
-        return filmStorage.getFilmStorage();
     }
 
     public Collection<Film> getFilms() {
