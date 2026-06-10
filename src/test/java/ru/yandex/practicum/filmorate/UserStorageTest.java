@@ -5,23 +5,23 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserControllerTests {
+class UserStorageTest {
 
-    private UserController userController;
+    private InMemoryUserStorage userController;
     private static Validator validator;
 
     @BeforeEach
     void beforeEach() {
-        userController = new UserController();
+        userController = new InMemoryUserStorage();
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
