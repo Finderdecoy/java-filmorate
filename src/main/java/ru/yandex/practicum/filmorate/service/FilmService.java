@@ -1,23 +1,29 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Optional;
 
 @Slf4j
-@Service
-@RequiredArgsConstructor
+@Service("dbFilms")
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
+    private static final LocalDate ORIGINAL_DATE_RELEASE = LocalDate.of(1895, 12, 28);
+
+    public FilmService(@Qualifier("filmStorageDB") FilmStorage filmStorage, UserService userService) {
+        this.filmStorage = filmStorage;
+        this.userService = userService;
+    }
 
     public void setLike(Long id, Long userId) {
         Film film = findFilmById(id);
@@ -38,11 +44,7 @@ public class FilmService {
     }
 
     private Film findFilmById(Long id) {
-        Optional<Film> film = filmStorage.getByID(id);
-        if (film.isPresent()) {
-            return film.get();
-        }
-        throw new NotFoundException("Фильм с id: " + id + " не найден.");
+        return filmStorage.getByID(id).orElseThrow(() -> new NotFoundException("Фильм с id: " + id + " не найден."));
     }
 
     public Collection<Film> getFilms() {
@@ -54,6 +56,12 @@ public class FilmService {
     }
 
     public Film addFilm(Film film) {
+        if (film.getReleaseDate().isBefore(ORIGINAL_DATE_RELEASE)) {
+            throw new ValidationException("Дата фильма не должна быть младше 1895г. 28 числа декабря.");
+        }
+        if (film.getDuration().toMinutes() < 0) {
+            throw new ValidationException("Длина фильма должна быть положительным числом");
+        }
         return filmStorage.addFilm(film);
     }
 }

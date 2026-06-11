@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 @Slf4j
-@Component
+@Component("memFilms")
 public class InMemoryFilmStorage implements FilmStorage {
     private final HashMap<Long, Film> films = new HashMap<>();
     private static final LocalDate ORIGINAL_DATE_RELEASE = LocalDate.of(1895, 12, 28);

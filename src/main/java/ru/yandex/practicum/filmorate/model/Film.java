@@ -11,9 +11,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Film.
- */
 @NoArgsConstructor
 @Data
 public class Film {
@@ -25,5 +22,7 @@ public class Film {
     private LocalDate releaseDate;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT, pattern = "MINUTES")
     private Duration duration;
+    private Set<Genre> genre;
+    private Rate rate;
     private Set<Long> likeList = new HashSet<>();
 }

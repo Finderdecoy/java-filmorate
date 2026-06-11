@@ -13,7 +13,7 @@ class FilmServiceTest {
 
     @BeforeEach
     public void beforeEach() {
-        this.filmService = new FilmService(new InMemoryFilmStorage(), new UserService(new InMemoryUserStorage()));
+        //this.filmService = new FilmService(new InMemoryFilmStorage(), new UserService(new InMemoryUserStorage()));
     }
 
     @Test

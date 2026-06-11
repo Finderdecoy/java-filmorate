@@ -8,11 +8,13 @@ INSERT INTO GENRE (name) VALUES
 INSERT INTO RATES (name_rate) VALUES
 ('G'), ('PG'), ('PG-13'), ('R'), ('NC-17');
 
-INSERT INTO FILMS (name, description, release_date, duration, genre, rates)
+INSERT INTO FILMS (name, description, release_date, duration,rates)
 VALUES (
     'Фунтик',
-    'Приключения поросёнка Фунтика» — советский четырёхсерийный мультфильм. ',
+    'Приключения поросёнка Фунтика» — советский четырёх серийный мультфильм. ',
+    '1986-02-03',
     40,
-    1,
     1
 );
+INSERT INTO FILM_GENRE (film_id,genre_id)
+VALUES(1,1),(1,2);
