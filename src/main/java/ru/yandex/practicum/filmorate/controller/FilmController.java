@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -31,14 +30,14 @@ public class FilmController {
 
     @PutMapping
     public Film editFilm(@RequestBody Film editFilm) {
-        log.info("Пришел фильм: {}",editFilm);
+        log.info("Пришел фильм: {}", editFilm);
         return filmService.editFilm(editFilm);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void setLike(@PathVariable Long id,
                         @PathVariable Long userId) {
-        log.info("Получил film-id = {} - {} , получил user-id {} - {}",id,id.getClass(),userId,userId.getClass());
+        log.info("Получил film-id = {} - {} , получил user-id {} - {}", id, id.getClass(), userId, userId.getClass());
         filmService.setLike(id, userId);
     }
 
@@ -54,9 +53,9 @@ public class FilmController {
         return filmService.mostPopular(count);
     }
 
-    @GetMapping("/{idGenre}")
-    public Collection<Film> filmsWithGenre(@PathVariable Long idGenre){
-        return filmService.getFilmsWithGenre(idGenre);
+    @GetMapping("/{id}")
+    public Film filmsWithGenre(@PathVariable Long id) {
+        return filmService.getWithGenre(id);
     }
 
 }

@@ -11,23 +11,23 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class GenreService{
+public class GenreService {
     public static final String QUERY_FOR_ALL_GENRE = "SELECT * FROM genre;";
     public static final String QUERY_BY_ID_GENRE = "SELECT * FROM genre WHERE id = ?";
     private final JdbcTemplate jdbc;
 
-    public List<Genre> getAllGenre(){
+    public List<Genre> getAllGenre() {
         return jdbc.query(QUERY_FOR_ALL_GENRE, new GenreMapper());
     }
 
-    public Genre getGenreById(Long id){
+    public Genre getGenreById(Long id) {
         checkGenre(id);
-        return jdbc.queryForObject(QUERY_BY_ID_GENRE, new GenreMapper(),id);
+        return jdbc.queryForObject(QUERY_BY_ID_GENRE, new GenreMapper(), id);
     }
 
-    public void checkGenre(Long id){
-        Integer countRows = jdbc.queryForObject("SELECT COUNT(*) FROM GENRE WHERE id = ?;",Integer.class,id);
-        if(countRows == null || countRows == 0 ){
+    public void checkGenre(Long id) {
+        Integer countRows = jdbc.queryForObject("SELECT COUNT(*) FROM GENRE WHERE id = ?;", Integer.class, id);
+        if (countRows == null || countRows == 0) {
             throw new NotFoundException("Жанр с id : " + id + " не найден.");
         }
     }

@@ -13,7 +13,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.GenreMapper;
-import ru.yandex.practicum.filmorate.storage.mapper.RateMapper;
+import ru.yandex.practicum.filmorate.storage.mapper.MPAMapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -27,25 +27,23 @@ import java.util.stream.Collectors;
 @Component("filmStorageDB")
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
-    private final JdbcTemplate jdbc;
-
     private static final LocalDate ORIGINAL_DATE_RELEASE = LocalDate.of(1895, 12, 28);
-
     private final static String QUERY_FOR_ALL_FILMS = "SELECT * FROM films;";
     private final static String QUERY_FOR_GENRE_LIST = "SELECT * FROM film_genre;";
     private final static String QUERY_CREATE_FILM = "INSERT INTO films (name, description, release_date,duration, rates) VALUES (?, ?, ?, ?,?);";
     private final static String QUERY_SET_GENRE = "INSERT INTO film_genre (film_id,genre_id) VALUES (?,?);";
     private final static String QUERY_FIND_BY_ID = "SELECT * FROM films WHERE id = ?;";
     private static final String QUERY_UPDATE_FILM = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rates = ? WHERE id = ? ; ";
-
-    private List<Genre> listGenre ;
+    private final JdbcTemplate jdbc;
+    private List<Genre> listGenre;
     private List<Mpa> mpaList;
-    Map<Long,Set<Long>> listLikes;
+    private Map<Long, Set<Long>> listLikes;
 
 
     @Override
     public Collection<Film> getFilms() {
         getListGenre();
+        likedFilmsMap();
         HashMap<Long, Set<Long>> mapGenreFilms = jdbc.query(QUERY_FOR_GENRE_LIST, rs -> {
             HashMap<Long, Set<Long>> filmsIdAndGenreId = new HashMap<>();
             while (rs.next()) {
@@ -64,6 +62,9 @@ public class FilmDbStorage implements FilmStorage {
                             new TreeSet<>(Comparator.comparingLong(Genre::getId))
                     ));
             film.setGenres(filmGenres);
+            if (listLikes.containsKey(film.getId())) {
+                film.setLikeList(listLikes.get(film.getId()));
+            }
         }
         return films;
     }
@@ -78,33 +79,34 @@ public class FilmDbStorage implements FilmStorage {
         if (newFilm.getDuration().toMinutes() < 0) {
             throw new ValidationException("Длина фильма должна быть положительным числом");
         }
-        if (newFilm.getGenres() == null || newFilm.getGenres().isEmpty()) {
-            throw new NotFoundException("Жанра с таким ID не сушествует");
+        if (!newFilm.getGenres().isEmpty()) {
+            Set<Genre> genresFilm = newFilm.getGenres().stream().map(genre -> {
+                return listGenre.stream().filter(gn -> genre.getId() == gn.getId())
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException("Жанра с таким ID не существует"));
+            }).collect(Collectors.toCollection(LinkedHashSet::new));
+            newFilm.setGenres(genresFilm);
         }
-        Set<Genre> genresFilm = newFilm.getGenres().stream().map(genre -> {
-            return listGenre.stream().filter(gn -> genre.getId() == gn.getId())
-                            .findFirst()
-                            .orElseThrow(() -> new NotFoundException("Жанра с таким ID не сушествует"));
-        }).collect(Collectors.toCollection(LinkedHashSet::new));
         Mpa mpa = mpaList.stream()
                 .filter(rate -> rate.getId() == newFilm.getMpa().getId())
                 .findFirst()
-                .orElseThrow(()-> new NotFoundException("Рейтинг с таким ID  не найден"));
-        newFilm.setGenres(genresFilm);
+                .orElseThrow(() -> new NotFoundException("Рейтинг с таким ID  не найден"));
         newFilm.setMpa(mpa);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(con -> {
             PreparedStatement ps = con.prepareStatement(QUERY_CREATE_FILM, Statement.RETURN_GENERATED_KEYS);
-                ps.setString(1,newFilm.getName());
-                ps.setString(2,newFilm.getDescription());
-                ps.setDate(3, Date.valueOf(newFilm.getReleaseDate()));
-                ps.setInt(4,(int) newFilm.getDuration().toMinutes());
-                ps.setLong(5,newFilm.getMpa().getId());
-                return ps;},keyHolder);
+            ps.setString(1, newFilm.getName());
+            ps.setString(2, newFilm.getDescription());
+            ps.setDate(3, Date.valueOf(newFilm.getReleaseDate()));
+            ps.setInt(4, (int) newFilm.getDuration().toMinutes());
+            ps.setLong(5, newFilm.getMpa().getId());
+            return ps;
+        }, keyHolder);
         for (Genre genre : newFilm.getGenres()) {
             jdbc.update(QUERY_SET_GENRE, keyHolder.getKey().longValue(), genre.getId());
         }
         newFilm.setId(keyHolder.getKey().longValue());
+        log.info("Фильм добавлен - {}", newFilm);
         return newFilm;
     }
 
@@ -140,7 +142,6 @@ public class FilmDbStorage implements FilmStorage {
             if (editFilm.getMpa() != null) {
                 oldFilm.setMpa(editFilm.getMpa());
             }
-            log.info("Дошел до добавления фильма. Сам фильм : {}" , oldFilm);
             jdbc.update(QUERY_UPDATE_FILM,
                     oldFilm.getName(),
                     oldFilm.getDescription(),
@@ -157,12 +158,14 @@ public class FilmDbStorage implements FilmStorage {
     public Optional<Film> getByID(Long filmId) {
         Optional<Film> films = jdbc.query(QUERY_FIND_BY_ID, new FilmMapper(), filmId).stream().findFirst();
         likedFilmsMap();
-        films.get().setLikeList(listLikes.get(filmId));
+        films.ifPresent(film -> {
+            film.setLikeList(listLikes.get(filmId));
+        });
         return films;
     }
 
     private void likedFilmsMap() {
-        listLikes = jdbc.query("SELECT * FROM FILM_LIKES;",rs -> {
+        listLikes = jdbc.query("SELECT * FROM FILM_LIKES;", rs -> {
             Map<Long, Set<Long>> filmsIdAndUserLikes = new HashMap<>();
             while (rs.next()) {
                 long filmID = rs.getLong("film_id");
@@ -178,6 +181,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private List<Mpa> getListMPA() {
-        return mpaList = jdbc.query("SELECT * FROM rates;", new RateMapper());
+        return mpaList = jdbc.query("SELECT * FROM rates;", new MPAMapper());
     }
 }

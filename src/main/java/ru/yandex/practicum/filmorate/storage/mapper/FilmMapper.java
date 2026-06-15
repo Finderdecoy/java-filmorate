@@ -10,6 +10,7 @@ import java.time.Duration;
 
 public class FilmMapper implements RowMapper<Film> {
     private GenreMapper genreMap;
+
     @Override
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         Film film = new Film();

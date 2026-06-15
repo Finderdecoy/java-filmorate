@@ -63,9 +63,9 @@ public class UserService {
         String sql = "SELECT u.id, u.email,u.login,u.name,u.birthday" +
                 " FROM users AS u " +
                 "JOIN FRIENDSHIP f1 ON u.ID = f1.FRIEND_ID " +
-                "JOIN FRIENDSHIP f2 ON u.ID = f2.FRIEND_ID "  +
+                "JOIN FRIENDSHIP f2 ON u.ID = f2.FRIEND_ID " +
                 "WHERE f1.USER_ID = ? AND f2.USER_ID = ?; ";
-        return jdbc.query(sql,new UserMapper(), firstId,secondId);
+        return jdbc.query(sql, new UserMapper(), firstId, secondId);
     }
 
     public User findUserByID(Long id) {

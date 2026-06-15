@@ -25,11 +25,10 @@ class FilmoRateApplicationTests {
 
 
         Optional<User> userOptional = userStorage.getByID(1L);
-
         assertThat(userOptional)
                 .isPresent()
                 .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("id", 1)
+                        assertThat(user).hasFieldOrPropertyWithValue("id", 1L)
                 );
     }
 }

@@ -9,10 +9,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.storage.mapper.GenreMapper;
+import ru.yandex.practicum.filmorate.storage.mapper.MPAMapper;
 
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.HashSet;
 
 @Slf4j
 @Service
@@ -51,7 +52,11 @@ public class FilmService {
     }
 
     public Collection<Film> mostPopular(int count) {
-        return filmStorage.getFilms().stream().sorted(Comparator.comparing((Film film) -> film.getLikeList().size()).reversed()).limit(count).toList();
+        return jdbc.query("SELECT F.ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATES " +
+                "FROM FILMS AS F " +
+                "LEFT JOIN FILM_LIKES AS FL ON F.ID = FL.FILM_ID " +
+                "GROUP BY F.ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATES " +
+                "ORDER BY COUNT(FL.USER_ID) DESC", new FilmMapper());
     }
 
     private Film findFilmById(Long id) {
@@ -80,19 +85,17 @@ public class FilmService {
         }
     }
 
-    public List<Film> getFilmsWithGenre(Long idGenre) {
-        genreService.checkGenre(idGenre);
-        /*List<Film> films = jdbc.query("SELECT * FROM FILMS AS F\n" +
-                "INNER JOIN FILM_GENRE  AS FG  ON FG.FILM_ID = F.ID\n" +
-                "INNER JOIN GENRE AS G ON G.ID = FG.GENRE_ID\n" +
-                "WHERE G.ID = ? ", new FilmMapper(), idGenre);*/
-        List<Film> films = filmStorage.getFilms().stream()
-                .filter(film -> film.getGenres() != null &&
-                        film.getGenres().stream().anyMatch(g -> g.getId() == idGenre))
-                .toList();
-        if(films.isEmpty()){
-            throw new NotFoundException("Фильмы с таким жанром не найдены");
-        }
-        return films;
+    public Film getWithGenre(Long id) {
+        Film findFilm = filmStorage.getByID(id).orElseThrow(() -> new NotFoundException("Нет фильма"));
+        String QUERY_GENRE = "SELECT G.ID,G.NAME FROM FILM_GENRE AS FG " +
+                "INNER JOIN GENRE AS G ON G.ID = FG.GENRE_ID " +
+                "WHERE FG.FILM_ID = ?";
+        String QUERY_MPA_FOR_FILM = "SELECT R.ID, R.NAME_RATE FROM FILMS AS F " +
+                "INNER JOIN RATES AS R ON  R.ID = F.RATES " +
+                "WHERE F.ID =? ";
+        findFilm.setMpa(jdbc.queryForObject(QUERY_MPA_FOR_FILM, new MPAMapper(), id));
+        findFilm.setGenres(new HashSet<>(jdbc.query(QUERY_GENRE, new GenreMapper(), id)));
+        return findFilm;
     }
+
 }

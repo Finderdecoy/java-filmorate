@@ -22,14 +22,13 @@ import java.util.Optional;
 @Component("UsersDb")
 
 public class UserDbStorage implements UserStorage {
-    private final JdbcTemplate jdbc;
-    private HashMap<Long, HashMap<Long, Boolean>> friendList = new HashMap<>();
-
     private static final String QUERY_FOR_LIST_USERS = "SELECT * FROM users;";
     private static final String QUERY_FOR_FRIEND_LIST = "SELECT * FROM FRIENDSHIP;";
     private static final String QUERY_FOR_CREATE_USER = "INSERT INTO users(email,login,name,birthday) VALUES(?,?,?,?);";
-    private static final  String QUERY_FOR_UPDATE_USER  = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?;";
-    private static final String QUERY_USER_BY_ID = "SELECT * FROM users WHERE id = ? ;" ;
+    private static final String QUERY_FOR_UPDATE_USER = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?;";
+    private static final String QUERY_USER_BY_ID = "SELECT * FROM users WHERE id = ? ;";
+    private final JdbcTemplate jdbc;
+    private HashMap<Long, HashMap<Long, Boolean>> friendList = new HashMap<>();
 
     @Override
     public Collection<User> getUsers() {
@@ -51,7 +50,7 @@ public class UserDbStorage implements UserStorage {
         }
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(QUERY_FOR_CREATE_USER,Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = connection.prepareStatement(QUERY_FOR_CREATE_USER, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, user.getEmail());
             ps.setString(2, user.getLogin());
             ps.setString(3, user.getName());
@@ -110,7 +109,7 @@ public class UserDbStorage implements UserStorage {
         });
     }
 
-    private User friendShipListConcatenation(User user){
+    private User friendShipListConcatenation(User user) {
         user.setFriendList(getFrendList().get(user.getId()));
         return user;
     }
