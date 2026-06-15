@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @NoArgsConstructor
 @Data
@@ -22,7 +21,8 @@ public class Film {
     private LocalDate releaseDate;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT, pattern = "MINUTES")
     private Duration duration;
-    private Set<Genre> genre;
-    private Rate rate;
+    private Mpa mpa;
+    private int rate;
+    private Set<Genre> genres = new TreeSet<>(Comparator.comparingLong(Genre::getId));
     private Set<Long> likeList = new HashSet<>();
 }

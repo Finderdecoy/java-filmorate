@@ -7,19 +7,17 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.GenreService;
 
 import java.util.Collection;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
-
-
     private final FilmService filmService;
-    public FilmController(@Qualifier("dbFilms") FilmService filmService) {
-        this.filmService = filmService;
-    }
+    private final GenreService genreService;
 
     @GetMapping
     public Collection<Film> getFilms() {
@@ -33,18 +31,21 @@ public class FilmController {
 
     @PutMapping
     public Film editFilm(@RequestBody Film editFilm) {
+        log.info("Пришел фильм: {}",editFilm);
         return filmService.editFilm(editFilm);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void setLike(@PathVariable Long id,
                         @PathVariable Long userId) {
+        log.info("Получил film-id = {} - {} , получил user-id {} - {}",id,id.getClass(),userId,userId.getClass());
         filmService.setLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void delLike(@PathVariable Long id,
                         @PathVariable Long userId) {
+        log.info("Дошел до сервиса");
         filmService.delLike(id, userId);
     }
 
@@ -52,4 +53,10 @@ public class FilmController {
     public Collection<Film> mostPopular(@RequestParam(defaultValue = "10") int count) {
         return filmService.mostPopular(count);
     }
+
+    @GetMapping("/{idGenre}")
+    public Collection<Film> filmsWithGenre(@PathVariable Long idGenre){
+        return filmService.getFilmsWithGenre(idGenre);
+    }
+
 }
