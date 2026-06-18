@@ -27,10 +27,16 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film newFilm) {
-        log.info("\n Фильм успешно добавлен -  {}", newFilm);
+        if (newFilm.getReleaseDate().isBefore(ORIGINAL_DATE_RELEASE)) {
+            throw new ValidationException("Дата фильма не должна быть младше 1895г. 28 числа декабря.");
+        }
+        if (newFilm.getDuration().toMinutes() < 0) {
+            throw new ValidationException("Длина фильма должна быть положительным числом");
+        }
         long idFilm = nextId();
         newFilm.setId(idFilm);
         films.put(idFilm, newFilm);
+        log.info("\n Фильм успешно добавлен -  {}", newFilm);
         return newFilm;
     }
 
