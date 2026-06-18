@@ -20,7 +20,6 @@ import java.util.HashSet;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
-    private final GenreService genreService;
     private final JdbcTemplate jdbc;
 
     public FilmService(@Qualifier("filmStorageDB") FilmStorage filmStorage,
@@ -29,7 +28,6 @@ public class FilmService {
                        JdbcTemplate jdbc) {
         this.filmStorage = filmStorage;
         this.userService = userService;
-        this.genreService = genreService;
         this.jdbc = jdbc;
     }
 
@@ -64,8 +62,6 @@ public class FilmService {
     }
 
     public Collection<Film> getFilms() {
-
-
         return filmStorage.getFilms();
     }
 

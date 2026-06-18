@@ -8,10 +8,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -91,8 +88,8 @@ public class UserService {
 
     public void checkUsers(Long firstId) {
         String sql = "SELECT COUNT(*) FROM USERS WHERE ID = ?";
-        Integer countFirst = jdbc.queryForObject(sql, Integer.class, firstId);
-        if (countFirst == null || countFirst == 0) {
+        Integer countUsers = jdbc.queryForObject(sql, Integer.class, firstId);
+        if (countUsers == null || countUsers == 0) {
             throw new NotFoundException("Пользователь с id " + firstId + " не найден в БД");
         }
     }
