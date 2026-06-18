@@ -28,11 +28,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private static final LocalDate ORIGINAL_DATE_RELEASE = LocalDate.of(1895, 12, 28);
-    private final static String QUERY_FOR_ALL_FILMS = "SELECT * FROM films;";
-    private final static String QUERY_FOR_GENRE_LIST = "SELECT * FROM film_genre;";
-    private final static String QUERY_CREATE_FILM = "INSERT INTO films (name, description, release_date,duration, rates) VALUES (?, ?, ?, ?,?);";
-    private final static String QUERY_SET_GENRE = "INSERT INTO film_genre (film_id,genre_id) VALUES (?,?);";
-    private final static String QUERY_FIND_BY_ID = "SELECT * FROM films WHERE id = ?;";
+    private static final String QUERY_FOR_ALL_FILMS = "SELECT * FROM films;";
+    private static final String QUERY_FOR_GENRE_LIST = "SELECT * FROM film_genre;";
+    private static final String QUERY_CREATE_FILM = "INSERT INTO films (name, description, release_date,duration, rates) VALUES (?, ?, ?, ?,?);";
+    private static final String QUERY_SET_GENRE = "INSERT INTO film_genre (film_id,genre_id) VALUES (?,?);";
+    private static final String QUERY_FIND_BY_ID = "SELECT * FROM films WHERE id = ?;";
     private static final String QUERY_UPDATE_FILM = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rates = ? WHERE id = ? ; ";
     private final JdbcTemplate jdbc;
     private List<Genre> listGenre;
