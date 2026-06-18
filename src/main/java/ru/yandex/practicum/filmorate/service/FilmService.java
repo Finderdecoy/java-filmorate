@@ -87,14 +87,14 @@ public class FilmService {
 
     public Film getWithGenre(Long id) {
         Film findFilm = filmStorage.getByID(id).orElseThrow(() -> new NotFoundException("Нет фильма"));
-        String QueryGenre = "SELECT G.ID,G.NAME FROM FILM_GENRE AS FG " +
+        String queryGenre = "SELECT G.ID,G.NAME FROM FILM_GENRE AS FG " +
                 "INNER JOIN GENRE AS G ON G.ID = FG.GENRE_ID " +
                 "WHERE FG.FILM_ID = ?";
-        String QueryMpaForFilms = "SELECT R.ID, R.NAME_RATE FROM FILMS AS F " +
+        String queryMpaForFilms = "SELECT R.ID, R.NAME_RATE FROM FILMS AS F " +
                 "INNER JOIN RATES AS R ON  R.ID = F.RATES " +
                 "WHERE F.ID =? ";
-        findFilm.setMpa(jdbc.queryForObject(QueryMpaForFilms, new MPAMapper(), id));
-        findFilm.setGenres(new HashSet<>(jdbc.query(QueryGenre, new GenreMapper(), id)));
+        findFilm.setMpa(jdbc.queryForObject(queryMpaForFilms, new MPAMapper(), id));
+        findFilm.setGenres(new HashSet<>(jdbc.query(queryGenre, new GenreMapper(), id)));
         return findFilm;
     }
 
