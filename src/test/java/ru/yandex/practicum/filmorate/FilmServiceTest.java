@@ -75,8 +75,8 @@ class FilmServiceTest {
 
     @Test
     @Order(7)
-    public void testMostPopularList(){
-        LocalDate releaseDate = LocalDate.of(1993,1,12);
+    public void testMostPopularList() {
+        LocalDate releaseDate = LocalDate.of(1993, 1, 12);
 
         Mpa mpa = new Mpa();
         mpa.setId(1);
@@ -87,7 +87,7 @@ class FilmServiceTest {
         film.setDuration(Duration.ofMinutes(45));
         film.setDescription("Description1");
         film.setMpa(mpa);
-        film.setReleaseDate(LocalDate.of(1999,1,1));
+        film.setReleaseDate(LocalDate.of(1999, 1, 1));
 
         Film film1 = new Film();
         film1.setName("film2");
@@ -109,18 +109,18 @@ class FilmServiceTest {
         filmService.addFilm(film2);
 
 
-        filmService.setLike(2L,1L);
-        filmService.setLike(2L,2L);
-        filmService.setLike(2L,3L);
+        filmService.setLike(2L, 1L);
+        filmService.setLike(2L, 2L);
+        filmService.setLike(2L, 3L);
 
-        filmService.setLike(3L,1L);
-        filmService.setLike(3L,2L);
-        filmService.setLike(3L,3L);
-        filmService.setLike(3L,4L);
-        filmService.setLike(3L,5L);
+        filmService.setLike(3L, 1L);
+        filmService.setLike(3L, 2L);
+        filmService.setLike(3L, 3L);
+        filmService.setLike(3L, 4L);
+        filmService.setLike(3L, 5L);
 
         List<Film> mostPopular = filmService.mostPopular(4).stream().peek(System.out::println).toList();
-        assertThat(mostPopular).isNotEmpty().first().hasFieldOrPropertyWithValue("id",3L);
-        assertThat(mostPopular).last().hasFieldOrPropertyWithValue("id",4L);
+        assertThat(mostPopular).isNotEmpty().first().hasFieldOrPropertyWithValue("id", 3L);
+        assertThat(mostPopular).last().hasFieldOrPropertyWithValue("id", 4L);
     }
 }
