@@ -7,15 +7,36 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Component("UserMemStorage")
 public class InMemoryUserStorage implements UserStorage {
     private final HashMap<Long, User> users = new HashMap<>();
+
+    @Override
+    public void checkUsers(Long id) {
+    }
+
+    @Override
+    public Map<Long, Boolean> getUserFriend(Long id) {
+        return Map.of();
+    }
+
+    @Override
+    public void addFriend(Long idUser, Long idFriend) {
+
+    }
+
+    @Override
+    public void deleteFriend(Long idUser, Long idFriend) {
+
+    }
+
+    @Override
+    public void setStatusFriend(Long idUser, Long idFriend, Boolean status) {
+
+    }
 
     @Override
     public Collection<User> getUsers() {

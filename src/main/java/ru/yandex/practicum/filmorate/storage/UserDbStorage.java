@@ -13,10 +13,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component("UsersDb")
@@ -28,12 +25,11 @@ public class UserDbStorage implements UserStorage {
     private static final String QUERY_FOR_UPDATE_USER = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?;";
     private static final String QUERY_USER_BY_ID = "SELECT * FROM users WHERE id = ? ;";
     private final JdbcTemplate jdbc;
-    private HashMap<Long, HashMap<Long, Boolean>> friendList = new HashMap<>();
 
     @Override
     public Collection<User> getUsers() {
         List<User> users = jdbc.query(QUERY_FOR_LIST_USERS, new UserMapper());
-        friendList = getFrendList();
+        var friendList = getFrendList();
         for (User user : users) {
             user.setFriendList(friendList.get(user.getId()));
         }
@@ -67,13 +63,10 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User editingUser(User editUser) {
         Long userId = editUser.getId();
-        if (userId == null) {
-            throw new ValidationException("Id должен быть указан");
-        }
         Optional<User> user = getByID(editUser.getId());
         if (user.isPresent()) {
             User oldUser = user.get();
-            if (editUser.getName() != null || !editUser.getName().isBlank()) {
+            if (editUser.getName() != null && !editUser.getName().isBlank()) {
                 oldUser.setName(editUser.getName());
             }
             if (editUser.getBirthday() != null && !editUser.getBirthday().isAfter(LocalDate.now())) {
@@ -82,20 +75,22 @@ public class UserDbStorage implements UserStorage {
             if (editUser.getEmail() != null && !editUser.getEmail().isBlank()) {
                 oldUser.setEmail(editUser.getEmail());
             }
+            if (editUser.getLogin() != null && !editUser.getLogin().isBlank()) oldUser.setLogin(editUser.getLogin());
             jdbc.update(QUERY_FOR_UPDATE_USER,
                     oldUser.getEmail(),
                     oldUser.getLogin(),
                     oldUser.getName(),
                     oldUser.getBirthday(),
                     oldUser.getId());
-            return editUser;
+            return oldUser;
         }
         throw new NotFoundException("Пользователь id = " + userId + " не найден.");
     }
 
     @Override
     public Optional<User> getByID(Long id) {
-        return jdbc.query(QUERY_USER_BY_ID, new UserMapper(), id).stream().map(this::friendShipListConcatenation).findFirst();
+        List<User> users = jdbc.query(QUERY_USER_BY_ID, new UserMapper(), id);
+        return users.stream().findFirst();
     }
 
     private HashMap<Long, HashMap<Long, Boolean>> getFrendList() {
@@ -109,8 +104,53 @@ public class UserDbStorage implements UserStorage {
         });
     }
 
+    @Override
+    public void addFriend(Long idUser, Long idFriend) {
+        String sql = "INSERT INTO FRIENDSHIP (user_id,friend_id) \n" +
+                "VALUES (?,?)";
+        jdbc.update(sql, idUser, idFriend);
+    }
+
+
+    @Override
+    public void setStatusFriend(Long idUser, Long idFriend, Boolean status) {
+        String sql = "UPDATE FRIENDSHIP SET status = " + status + "\n" +
+                "WHERE USER_ID = ? AND FRIEND_ID = ?";
+        jdbc.update(sql, idUser, idFriend);
+    }
+
+    @Override
+    public void deleteFriend(Long idUser, Long idFriend) {
+        String sql = "DELETE FROM\t FRIENDSHIP\n" +
+                "WHERE user_id = ? AND friend_id = ?";
+        jdbc.update(sql, idUser, idFriend);
+    }
+
+    @Override
+    public void checkUsers(Long firstId) {
+        String sql = "SELECT COUNT(*) FROM USERS WHERE ID = ?";
+        Integer countUsers = jdbc.queryForObject(sql, Integer.class, firstId);
+        if (countUsers == null || countUsers == 0) {
+            throw new NotFoundException("Пользователь с id " + firstId + " не найден в БД");
+        }
+    }
+
     private User friendShipListConcatenation(User user) {
         user.setFriendList(getFrendList().get(user.getId()));
         return user;
     }
+
+    public Map<Long, Boolean> getUserFriend(Long id) {
+        String sql = "SELECT f.FRIEND_ID, f.status \n" +
+                "FROM FRIENDSHIP f \n" +
+                "WHERE f.USER_ID = ?";
+        return jdbc.query(sql, rs -> {
+            HashMap<Long, Boolean> friendlist = new HashMap<>();
+            while (rs.next()) {
+                friendlist.put(rs.getLong(1), rs.getBoolean(2));
+            }
+            return friendlist;
+        }, id);
+    }
+
 }

@@ -13,4 +13,10 @@ public interface FilmStorage {
     Film editFilm(Film editFilm);
 
     Optional<Film> getByID(Long id);
+
+    Collection<Film> mostPopular(int count);
+
+    void setLike(Long idFilm, Long idUser);
+
+    void deleteLike(Long id, Long userId);
 }

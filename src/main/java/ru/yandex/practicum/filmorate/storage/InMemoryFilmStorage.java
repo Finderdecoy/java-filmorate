@@ -8,10 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Component("memFilms")
@@ -91,6 +88,21 @@ public class InMemoryFilmStorage implements FilmStorage {
 
         log.info("Неверное заполнено поле \n id: {}\n Название:{} \n Описание: {} \n Дата выхода:{}\n Продолжительность:{}",
                 filmId, nameFilm, descriptionFilm, dateRelease, dur);
+    }
+
+    @Override
+    public Collection<Film> mostPopular(int count) {
+        return List.of();
+    }
+
+    @Override
+    public void setLike(Long idFilm, Long idUser) {
+
+    }
+
+    @Override
+    public void deleteLike(Long id, Long userId) {
+
     }
 
     public Optional<Film> getByID(Long id) {

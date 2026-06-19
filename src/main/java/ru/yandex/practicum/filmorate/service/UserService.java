@@ -6,63 +6,52 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 
 import java.util.*;
 
 @Service
 public class UserService {
     private final UserStorage userStorage;
-    private final JdbcTemplate jdbc;
 
     public UserService(@Qualifier("UsersDb") UserStorage userStorage, JdbcTemplate jdbc) {
         this.userStorage = userStorage;
-        this.jdbc = jdbc;
     }
 
     public void addToFriendList(Long firstId, Long secondId) {
         checkUsers(firstId);
         checkUsers(secondId);
-        String checkSql = "SELECT COUNT(*) FROM friendship WHERE user_id = ? AND friend_id = ?";
-        Integer count = jdbc.queryForObject(checkSql, Integer.class, secondId, firstId);
-        boolean isFriend = (count != null && count > 0);
-        if (isFriend) {
-            jdbc.update("UPDATE friendship SET status = true WHERE user_id = ? AND friend_id = ?", secondId, firstId);
-            String mergeTrueSql = "MERGE INTO friendship (user_id, friend_id, status) KEY(user_id, friend_id) VALUES (?, ?, true)";
-            jdbc.update(mergeTrueSql, firstId, secondId);
-        } else {
-            String mergeFalseSql = "MERGE INTO friendship (user_id, friend_id, status) KEY(user_id, friend_id) VALUES (?, ?, false)";
-            jdbc.update(mergeFalseSql, firstId, secondId);
+        userStorage.addFriend(firstId, secondId);
+        var friends = userStorage.getUserFriend(secondId).keySet();
+        if (friends.contains(firstId)) {
+            userStorage.setStatusFriend(firstId, secondId, true);
+            userStorage.setStatusFriend(secondId, firstId, true);
         }
     }
 
-
-    public List<User> getFriendList(Long userId) {
-        checkUsers(userId);
-        List<User> list = jdbc.query("SELECT friend_id FROM friendship WHERE user_id = ?;", rs -> {
-            List<User> users = new ArrayList<>();
-            while (rs.next()) {
-                var user = userStorage.getByID(rs.getLong(1));
-                user.ifPresent(users::add);
-            }
-            return users;
-        }, userId);
-        return list;
+    public Collection<User> getFriendList(Long id) {
+        checkUsers(id);
+        Set<Long> friendsIds = userStorage.getUserFriend(id).keySet();
+        if (friendsIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return getUsers().stream().filter(user -> friendsIds.contains(user.getId())).toList();
     }
 
     public void deleteFromFriendList(Long firstId, Long secondId) {
         checkUsers(firstId);
         checkUsers(secondId);
-        jdbc.update("DELETE FROM FRIENDSHIP WHERE USER_ID = ? AND FRIEND_ID = ?", firstId, secondId);
+        userStorage.deleteFriend(firstId, secondId);
+        userStorage.setStatusFriend(secondId, firstId, false);
     }
 
+    //Сделал логику в сервисе, хотя руки чесались сделать все 1 sql запросом в Storage.
     public List<User> getCommonFriends(Long firstId, Long secondId) {
-        String sql = "SELECT u.id, u.email,u.login,u.name,u.birthday" +
-                " FROM users AS u " +
-                "JOIN FRIENDSHIP f1 ON u.ID = f1.FRIEND_ID " +
-                "JOIN FRIENDSHIP f2 ON u.ID = f2.FRIEND_ID " +
-                "WHERE f1.USER_ID = ? AND f2.USER_ID = ?; ";
-        return jdbc.query(sql, new UserMapper(), firstId, secondId);
+        Set<Long> firstFriends = userStorage.getUserFriend(firstId).keySet();
+        Set<Long> secondFriends = userStorage.getUserFriend(secondId).keySet();
+        List<User> users = userStorage.getUsers().stream().toList();
+        List<Long> commonsFriend = firstFriends.stream().filter(secondFriends::contains).toList();
+        if (commonsFriend.isEmpty()) throw new NotFoundException("Нет общих друзей");
+        return users.stream().filter(user -> commonsFriend.contains(user.getId())).toList();
     }
 
     public User findUserByID(Long id) {
@@ -73,6 +62,9 @@ public class UserService {
         throw new NotFoundException("Пользователь с таким id " + id + " не найден");
     }
 
+    public void checkUsers(Long id) {
+        userStorage.checkUsers(id);
+    }
 
     public Collection<User> getUsers() {
         return userStorage.getUsers();
@@ -86,11 +78,5 @@ public class UserService {
         return userStorage.editingUser(user);
     }
 
-    public void checkUsers(Long firstId) {
-        String sql = "SELECT COUNT(*) FROM USERS WHERE ID = ?";
-        Integer countUsers = jdbc.queryForObject(sql, Integer.class, firstId);
-        if (countUsers == null || countUsers == 0) {
-            throw new NotFoundException("Пользователь с id " + firstId + " не найден в БД");
-        }
-    }
+
 }

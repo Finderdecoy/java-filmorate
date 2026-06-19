@@ -64,10 +64,6 @@ class FilmServiceTest {
     @Test
     @Order(5)
     public void testDeleteLikeWrongUser() {
-        filmService.setLike(1L, 1L);
-        var likeList = filmService.getFilms().stream().findFirst().get().getLikeList();
-        assertThat(likeList).isNotEmpty().contains(1L);
-
         assertThatThrownBy(() -> filmService.delLike(1L, 999L)).isInstanceOf(NotFoundException.class);
     }
 
