@@ -1,21 +1,47 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
-@Controller
+@Component("UserMemStorage")
 public class InMemoryUserStorage implements UserStorage {
     private final HashMap<Long, User> users = new HashMap<>();
+
+    @Override
+    public Collection<User> getFriendListUser(Long id) {
+        return List.of();
+    }
+
+    @Override
+    public void checkUsers(Long id) {
+    }
+
+    @Override
+    public Map<Long, Boolean> getFriendsID(Long id) {
+        return Map.of();
+    }
+
+    @Override
+    public void addFriend(Long idUser, Long idFriend) {
+
+    }
+
+    @Override
+    public void deleteFriend(Long idUser, Long idFriend) {
+
+    }
+
+    @Override
+    public void setStatusFriend(Long idUser, Long idFriend, Boolean status) {
+
+    }
 
     @Override
     public Collection<User> getUsers() {
@@ -65,7 +91,11 @@ public class InMemoryUserStorage implements UserStorage {
             return editUser;
         }
         throw new NotFoundException("Пользователь id = " + userId + " не найден.");
+    }
 
+    @Override
+    public List<User> getCommonFriends(Long firstId, Long secondId) {
+        return List.of();
     }
 
     private long idCreate() {

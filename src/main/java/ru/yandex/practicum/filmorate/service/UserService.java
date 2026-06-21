@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -11,36 +13,43 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-@RequiredArgsConstructor
+@Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
 
-    public void addToFriendList(Long firstId, Long secondId) {
-        User firstFriend = findUserByID(firstId);
-        User secondFriend = findUserByID(secondId);
-
-        firstFriend.getFriendList().add(secondId);
-        secondFriend.getFriendList().add(firstId);
+    public UserService(@Qualifier("UsersDb") UserStorage userStorage, JdbcTemplate jdbc) {
+        this.userStorage = userStorage;
     }
 
-    public List<User> getFriendList(Long userId) {
-        return findUserByID(userId).getFriendList().stream().map(this::findUserByID).toList();
+    public void addToFriendList(Long firstId, Long secondId) {
+        checkUsers(firstId);
+        checkUsers(secondId);
+        userStorage.addFriend(firstId, secondId);
+        Set<Long> friendsID = userStorage.getFriendsID(secondId).keySet();
+        if (friendsID.contains(firstId)) {
+            userStorage.setStatusFriend(firstId, secondId, true);
+            userStorage.setStatusFriend(secondId, firstId, true);
+        }
+    }
+
+    public Collection<User> getFriendList(Long id) {
+        checkUsers(id);
+        return userStorage.getFriendListUser(id);
     }
 
     public void deleteFromFriendList(Long firstId, Long secondId) {
-        User firstFriend = findUserByID(firstId);
-        User secondFriend = findUserByID(secondId);
-
-        firstFriend.getFriendList().remove(secondId);
-        secondFriend.getFriendList().remove(firstId);
+        checkUsers(firstId);
+        checkUsers(secondId);
+        userStorage.deleteFriend(firstId, secondId);
+        userStorage.setStatusFriend(secondId, firstId, false);
+        log.info("Пользователь-id {} удалил из друзей пользователя-id{}", firstId, secondId);
     }
 
     public List<User> getCommonFriends(Long firstId, Long secondId) {
-        Set<Long> listFirstFriend = findUserByID(firstId).getFriendList();
-        Set<Long> listSecondFriend = findUserByID(secondId).getFriendList();
-
-        return listFirstFriend.stream().filter(listSecondFriend::contains).map(this::findUserByID).toList();
+        List<User> commonFriends = userStorage.getCommonFriends(firstId, secondId);
+        log.info("Вернул общих друзей пользователей {} и {} . Список общих {}", firstId, secondId, commonFriends);
+        return commonFriends;
     }
 
     public User findUserByID(Long id) {
@@ -51,6 +60,9 @@ public class UserService {
         throw new NotFoundException("Пользователь с таким id " + id + " не найден");
     }
 
+    public void checkUsers(Long id) {
+        userStorage.checkUsers(id);
+    }
 
     public Collection<User> getUsers() {
         return userStorage.getUsers();
@@ -63,5 +75,6 @@ public class UserService {
     public User editingUser(User user) {
         return userStorage.editingUser(user);
     }
+
 
 }

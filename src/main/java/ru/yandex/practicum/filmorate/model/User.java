@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 @NoArgsConstructor
 @Data
@@ -24,5 +24,5 @@ public class User {
     private String name;
     @NotNull
     private LocalDate birthday;
-    private Set<Long> friendList = new HashSet<>();
+    private Map<Long, Boolean> friendList = new HashMap<>();
 }

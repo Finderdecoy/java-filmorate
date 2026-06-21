@@ -8,17 +8,14 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
-@Component
+@Component("memFilms")
 public class InMemoryFilmStorage implements FilmStorage {
-    private final HashMap<Long, Film> films = new HashMap<>();
     private static final LocalDate ORIGINAL_DATE_RELEASE = LocalDate.of(1895, 12, 28);
     private static final int CORRECT_LENGTH = 200;
+    private final HashMap<Long, Film> films = new HashMap<>();
 
     @Override
     public Collection<Film> getFilms() {
@@ -33,10 +30,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (newFilm.getDuration().toMinutes() < 0) {
             throw new ValidationException("Длина фильма должна быть положительным числом");
         }
-        log.info("\n Фильм успешно добавлен -  {}", newFilm);
         long idFilm = nextId();
         newFilm.setId(idFilm);
         films.put(idFilm, newFilm);
+        log.info("\n Фильм успешно добавлен -  {}", newFilm);
         return newFilm;
     }
 
@@ -91,6 +88,21 @@ public class InMemoryFilmStorage implements FilmStorage {
 
         log.info("Неверное заполнено поле \n id: {}\n Название:{} \n Описание: {} \n Дата выхода:{}\n Продолжительность:{}",
                 filmId, nameFilm, descriptionFilm, dateRelease, dur);
+    }
+
+    @Override
+    public Collection<Film> mostPopular(int count) {
+        return List.of();
+    }
+
+    @Override
+    public void setLike(Long idFilm, Long idUser) {
+
+    }
+
+    @Override
+    public void deleteLike(Long id, Long userId) {
+
     }
 
     public Optional<Film> getByID(Long id) {
