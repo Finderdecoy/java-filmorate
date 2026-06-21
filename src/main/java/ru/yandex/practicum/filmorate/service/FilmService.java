@@ -56,7 +56,7 @@ public class FilmService {
         return filmStorage.addFilm(film);
     }
 
-    public Film getWithGenre(Long id) {
+    public Film getWithGenreByID(Long id) {
         Optional<Film> film = filmStorage.getByID(id);
         if (film.isEmpty()) throw new NotFoundException("Не найден фильм с id " + id);
         return film.get();

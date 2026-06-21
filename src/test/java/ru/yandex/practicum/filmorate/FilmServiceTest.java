@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -23,13 +21,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Sql(scripts = "/data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class FilmServiceTest {
 
     private final FilmService filmService;
 
     @Test
-    @Order(1)
     public void testFilmSetLike() {
         filmService.setLike(1L, 1L);
         var likeList = filmService.getFilms().stream().findFirst().get().getLikeList();
@@ -37,7 +34,6 @@ class FilmServiceTest {
     }
 
     @Test
-    @Order(2)
 
     public void testFilmSetLikeWrongUser() {
         assertThatThrownBy(() -> filmService.setLike(1L, 999L))
@@ -45,36 +41,34 @@ class FilmServiceTest {
     }
 
     @Test
-    @Order(3)
     public void testSetLikeWrongFilm() {
         assertThatThrownBy(() ->
                 filmService.setLike(2L, 1L)).isInstanceOf(NotFoundException.class);
     }
 
     @Test
-    @Order(4)
     public void testDeleteLike() {
-        //Лайк стоит с предыдущего теста
-
+        testFilmSetLike();
         filmService.delLike(1L, 1L);
         var likeListAfter = filmService.getFilms().stream().findFirst().get().getLikeList();
         assertThat(likeListAfter).isEmpty();
     }
 
     @Test
-    @Order(5)
     public void testDeleteLikeWrongUser() {
+        filmService.setLike(1L, 1L);
+        var likeList = filmService.getFilms().stream().findFirst().get().getLikeList();
+        assertThat(likeList).isNotEmpty().contains(1L);
+
         assertThatThrownBy(() -> filmService.delLike(1L, 999L)).isInstanceOf(NotFoundException.class);
     }
 
     @Test
-    @Order(6)
     public void testDeleteLikeWrongFilm() {
         assertThatThrownBy(() -> filmService.delLike(999L, 1L)).isInstanceOf(NotFoundException.class);
     }
 
     @Test
-    @Order(7)
     public void testMostPopularList() {
         LocalDate releaseDate = LocalDate.of(1993, 1, 12);
 

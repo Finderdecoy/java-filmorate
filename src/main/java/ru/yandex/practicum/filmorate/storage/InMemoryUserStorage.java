@@ -15,11 +15,16 @@ public class InMemoryUserStorage implements UserStorage {
     private final HashMap<Long, User> users = new HashMap<>();
 
     @Override
+    public Collection<User> getFriendListUser(Long id) {
+        return List.of();
+    }
+
+    @Override
     public void checkUsers(Long id) {
     }
 
     @Override
-    public Map<Long, Boolean> getUserFriend(Long id) {
+    public Map<Long, Boolean> getFriendsID(Long id) {
         return Map.of();
     }
 
@@ -86,6 +91,11 @@ public class InMemoryUserStorage implements UserStorage {
             return editUser;
         }
         throw new NotFoundException("Пользователь id = " + userId + " не найден.");
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long firstId, Long secondId) {
+        return List.of();
     }
 
     private long idCreate() {

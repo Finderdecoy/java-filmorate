@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -7,8 +8,12 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
+@Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
@@ -21,8 +26,8 @@ public class UserService {
         checkUsers(firstId);
         checkUsers(secondId);
         userStorage.addFriend(firstId, secondId);
-        var friends = userStorage.getUserFriend(secondId).keySet();
-        if (friends.contains(firstId)) {
+        Set<Long> friendsID = userStorage.getFriendsID(secondId).keySet();
+        if (friendsID.contains(firstId)) {
             userStorage.setStatusFriend(firstId, secondId, true);
             userStorage.setStatusFriend(secondId, firstId, true);
         }
@@ -30,11 +35,7 @@ public class UserService {
 
     public Collection<User> getFriendList(Long id) {
         checkUsers(id);
-        Set<Long> friendsIds = userStorage.getUserFriend(id).keySet();
-        if (friendsIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return getUsers().stream().filter(user -> friendsIds.contains(user.getId())).toList();
+        return userStorage.getFriendListUser(id);
     }
 
     public void deleteFromFriendList(Long firstId, Long secondId) {
@@ -42,16 +43,13 @@ public class UserService {
         checkUsers(secondId);
         userStorage.deleteFriend(firstId, secondId);
         userStorage.setStatusFriend(secondId, firstId, false);
+        log.info("Пользователь-id {} удалил из друзей пользователя-id{}", firstId, secondId);
     }
 
-    //Сделал логику в сервисе, хотя руки чесались сделать все 1 sql запросом в Storage.
     public List<User> getCommonFriends(Long firstId, Long secondId) {
-        Set<Long> firstFriends = userStorage.getUserFriend(firstId).keySet();
-        Set<Long> secondFriends = userStorage.getUserFriend(secondId).keySet();
-        List<User> users = userStorage.getUsers().stream().toList();
-        List<Long> commonsFriend = firstFriends.stream().filter(secondFriends::contains).toList();
-        if (commonsFriend.isEmpty()) throw new NotFoundException("Нет общих друзей");
-        return users.stream().filter(user -> commonsFriend.contains(user.getId())).toList();
+        List<User> commonFriends = userStorage.getCommonFriends(firstId, secondId);
+        log.info("Вернул общих друзей пользователей {} и {} . Список общих {}", firstId, secondId, commonFriends);
+        return commonFriends;
     }
 
     public User findUserByID(Long id) {

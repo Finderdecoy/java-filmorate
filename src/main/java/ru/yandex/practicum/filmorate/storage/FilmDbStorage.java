@@ -38,8 +38,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getFilms() {
         List<Film> films = jdbc.query(QUERY_FOR_ALL_FILMS, new FilmMapper());
-        loadGenresForFilms(films);
-        loadLikesForFilms(films);
+        mapFilmsGenres(films);
+        mapFilmsLikes(films);
         return films;
     }
 
@@ -144,7 +144,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LIMIT ?;";
 
         List<Film> popularFilms = jdbc.query(sql, new FilmMapper(), count);
-        loadGenresForFilms(popularFilms);
+        mapFilmsGenres(popularFilms);
         return popularFilms;
     }
 
@@ -189,7 +189,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private void loadGenresForFilms(List<Film> films) {
+    private void mapFilmsGenres(List<Film> films) {
         String sqlGenreMap = "SELECT f.id, g.ID AS genre_id ,g.NAME AS genre_name\n" +
                 "FROM FILMS f\n" +
                 "INNER JOIN FILM_GENRE fg ON fg.FILM_ID = f.ID \n" +
@@ -210,7 +210,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private void loadLikesForFilms(List<Film> films) {
+    private void mapFilmsLikes(List<Film> films) {
         if (films.isEmpty()) return;
 
         String sqlLikesMap = "SELECT FILM_ID, USER_ID FROM FILM_LIKES;";

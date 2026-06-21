@@ -138,10 +138,10 @@ class FilmorateDBStorageTests {
         editingFilm.setName("Now Test");
         editingFilm.setDescription("Now Test Description");
         editingFilm.setDuration(Duration.ofMinutes(1));
-        editingFilm.setReleaseDate(LocalDate.of(2020,01,03));
+        editingFilm.setReleaseDate(LocalDate.of(2020, 01, 03));
         editingFilm.setMpa(mpa);
 
         Film result = filmStorage.editFilm(editingFilm);
-        assertThat(result).hasFieldOrPropertyWithValue("name","Now Test");
+        assertThat(result).hasFieldOrPropertyWithValue("name", "Now Test");
     }
 }

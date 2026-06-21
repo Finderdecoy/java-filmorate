@@ -29,7 +29,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> getUsers() {
         List<User> users = jdbc.query(QUERY_FOR_LIST_USERS, new UserMapper());
-        var friendList = getFrendList();
+        var friendList = getFriendList();
         for (User user : users) {
             user.setFriendList(friendList.get(user.getId()));
         }
@@ -93,7 +93,7 @@ public class UserDbStorage implements UserStorage {
         return users.stream().findFirst();
     }
 
-    private HashMap<Long, HashMap<Long, Boolean>> getFrendList() {
+    private HashMap<Long, HashMap<Long, Boolean>> getFriendList() {
         return jdbc.query(QUERY_FOR_FRIEND_LIST, rs -> {
             HashMap<Long, HashMap<Long, Boolean>> userAndHisFriends = new HashMap<>();
             while (rs.next()) {
@@ -135,12 +135,22 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
+    @Override
+    public List<User> getCommonFriends(Long firstId, Long secondId) {
+        String sql = "SELECT  u.*\n" +
+                "FROM users u\n" +
+                "INNER JOIN FRIENDSHIP f1 ON u.ID = f1.FRIEND_ID\n" +
+                "INNER JOIN FRIENDSHIP f2 ON u.ID = f2.FRIEND_ID\n" +
+                "WHERE f1.USER_ID = ? AND f2.USER_ID = ?;\n";
+        return jdbc.query(sql, new UserMapper(), firstId, secondId);
+    }
+
     private User friendShipListConcatenation(User user) {
-        user.setFriendList(getFrendList().get(user.getId()));
+        user.setFriendList(getFriendList().get(user.getId()));
         return user;
     }
 
-    public Map<Long, Boolean> getUserFriend(Long id) {
+    public Map<Long, Boolean> getFriendsID(Long id) {
         String sql = "SELECT f.FRIEND_ID, f.status \n" +
                 "FROM FRIENDSHIP f \n" +
                 "WHERE f.USER_ID = ?";
@@ -151,6 +161,13 @@ public class UserDbStorage implements UserStorage {
             }
             return friendlist;
         }, id);
+    }
+
+    public Collection<User> getFriendListUser(Long id) {
+        String sql = "SELECT u.* FROM FRIENDSHIP f \n" +
+                "INNER JOIN USERS u ON u.ID = f.FRIEND_ID \n" +
+                "WHERE f.user_id = ?";
+        return jdbc.query(sql, new UserMapper(), id);
     }
 
 }
